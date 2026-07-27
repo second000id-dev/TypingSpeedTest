@@ -1,42 +1,41 @@
 <?php 
 include 'db.php';
 include 'header.php';
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && $conn && !$conn->connect_error) {
+    $username = htmlspecialchars($_POST['username']);
+    $wpm = intval($_POST['wpm']);
+    $accuracy = floatval($_POST['accuracy']);
+
+    $stmt = $conn->prepare("INSERT INTO scores (username, wpm, accuracy) VALUES (?, ?, ?)");
+    $stmt->bind_param("sid", $username, $wpm, $accuracy);
+    $stmt->execute();
+    $stmt->close();
+    
+    echo "<p style='color:green;'>Score saved successfully!</p>";
+}
 ?>
 
 <div class="container">
-    <h2>Leaderboard (Top Scores)</h2>
-    <table>
-        <tr>
-            <th>Rank</th>
-            <th>Name</th>
-            <th>WPM</th>
-            <th>Accuracy</th>
-            <th>Date</th>
-        </tr>
-        <?php
-        // Check if database connection is active before querying
-        if ($conn && !$conn->connect_error) {
-            $result = $conn->query("SELECT * FROM scores ORDER BY wpm DESC LIMIT 10");
-            $rank = 1;
-            if ($result && $result->num_rows > 0) {
-                while($row = $result->fetch_assoc()) {
-                    echo "<tr>
-                        <td>{$rank}</td>
-                        <td>{$row['username']}</td>
-                        <td>{$row['wpm']}</td>
-                        <td>{$row['accuracy']}%</td>
-                        <td>{$row['test_date']}</td>
-                    </tr>";
-                    $rank++;
-                }
-            } else {
-                echo "<tr><td colspan='5'>No records found yet.</td></tr>";
-            }
-        } else {
-            echo "<tr><td colspan='5'>Leaderboard is currently unavailable (Database disabled on serverless).</td></tr>";
-        }
-        ?>
-    </table>
+    <h2>Typing Speed Test</h2>
+    <div class="quote-box" id="quote"></div>
+    <textarea id="input-field" placeholder="Start typing here..."></textarea>
+    
+    <div class="stats">
+        <p>Time Left: <span id="timer">30</span>s</p>
+        <p>WPM: <span id="wpm">0</span></p>
+        <p>Accuracy: <span id="accuracy">100%</span></p>
+    </div>
+
+    <button id="restart-btn">Restart Test</button>
+
+    <form id="score-form" method="POST" style="display:none; margin-top:20px;">
+        <h3>Save Your Score</h3>
+        <input type="text" name="username" placeholder="Enter your name" required style="padding:5px; margin-right:5px;">
+        <input type="hidden" name="wpm" id="hidden-wpm">
+        <input type="hidden" name="accuracy" id="hidden-accuracy">
+        <button type="submit">Save Score</button>
+    </form>
 </div>
 
 <?php include 'footer.php'; ?>
