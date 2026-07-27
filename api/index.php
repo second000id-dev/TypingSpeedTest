@@ -2,7 +2,7 @@
 include 'db.php';
 include 'header.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+if ($_SERVER["REQUEST_METHOD"] == "POST" && $conn && !$conn->connect_error) {
     $username = htmlspecialchars($_POST['username']);
     $wpm = intval($_POST['wpm']);
     $accuracy = floatval($_POST['accuracy']);
